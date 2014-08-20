@@ -61,13 +61,12 @@ class Loading( threading.Thread ):
 		print '\n[-] payload over'
 
 
-def work( target, password_file ):
-	print 'Targer :         ',target; print 'Password-File :  ', password_file
+def work( target, password_list ):
+	print 'Target :         ',target
 	threads_num = 150; print 'Default threads :', threads_num
 
-	with open( password_file ) as pf:
-		for i in pf:
-			queue.put( i.strip() )
+	for i in password_list:
+		queue.put( i )
 
 	view_loading = Loading( queue.qsize() )
 	view_loading.start()
@@ -77,4 +76,6 @@ def work( target, password_file ):
 		print 'all wars are civil wars,because all men are brothers.'
 
 if __name__ == "__main__":
-	work( argv[1], argv[2] )
+	with open( argv[2] ) as pf:
+		p_l = [i.strip() for i in pf]
+	work( argv[1], p_l )
